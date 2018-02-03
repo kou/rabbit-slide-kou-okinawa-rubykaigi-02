@@ -1,0 +1,25 @@
+---
+id: okinawa-rubykaigi-02
+base_name: red-data-tools
+tags:
+- rabbit
+- okrk02
+- red-data-tools
+presentation_date: 2018-03-10
+presentation_start_time: 
+presentation_end_time: 
+version: 2018.3.10.0
+licenses:
+- CC BY-SA 4.0
+slideshare_id: 
+speaker_deck_id: 
+ustream_id: 
+vimeo_id: 
+youtube_id: 
+author:
+  markup_language: :rd
+  name: 須藤功平
+  email: kou@clear-code.com
+  rubygems_user: kou
+  slideshare_user: kou
+  speaker_deck_user: 
