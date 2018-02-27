@@ -35,13 +35,14 @@ Rubyで\n
 
   * 各種フォーマットを扱うgem
     * Apache Arrow, Apache Parquet, CSV, ...
-  * 各種パッケージの提供
-    * deb, RPM, Home brew, ...
+  * 各種パッケージの用意
+    * deb, RPM, Homebrew, ...
   * ...
 
 = この話の目的
 
-勧誘
+勧誘\n
+(('note:一緒に開発しようぜ！'))
 
 = 勧誘方法
 
@@ -191,4 +192,108 @@ Rubyだから！
 
 = 開発例
 
-...
+  * ツールの紹介((*ではない*))
+  * 実装の紹介
+    * 開発中におっと思ったやつとか
+    * 紹介したいやつとか
+
+= 開発例1
+
+csv
+
+= csv
+
+  * CSVの読み書きライブラリー
+  * 2003年から標準添付
+  * 2018年からメンテナンスを引取
+
+= digを追加したとき
+
+(('tag:x-small'))((<URL:https://github.com/ruby/csv/pull/15>))
+
+  * (({CSV::Table#dig}))
+  * (({CSV::Row#dig}))
+
+= digの作り方
+
+  # rouge ruby
+
+  def dig(index, *indexes)
+    # ここだけ違う
+    value = find_value(index)
+    # ↓は共通
+    return nil if value.nil?
+    return value if indexes.empty?
+    value.dig(*indexes)
+  end
+
+= CSV::Rowでのfind_value
+
+  # rouge ruby
+
+  row[index] # => field value
+
+(({dig}))の中では(({self}))の(({[]}))を呼べばよい
+
+= []の呼び方
+
+  # rouge ruby
+
+  def dig(index, *indexes)
+    # インスタンスメソッドでは
+    # selfを省略できるからこう？
+    value = [index]
+    # ↑は配列リテラル
+    # ...
+  end
+
+= []の呼び方
+
+  # rouge ruby
+
+  def dig(index, *indexes)
+    # selfは省略できないか。。。
+    # メソッド呼び出し形式なら？
+    value = self.[index]
+    # ↑はシンタックスエラー
+    # ...
+  end
+
+= []の呼び方
+
+  # rouge ruby
+
+  def dig(index, *indexes)
+    # こういうときこそsendで　　
+    # メソッド呼び出し
+    value = send(:[], index)
+    # 動く
+    # ...
+  end
+
+= []の呼び方
+
+  # rouge ruby
+
+  def dig(index, *indexes)
+    # row[index]みたいに書けば　
+    # よかった
+    value = self[index]
+    # もちろん動く
+    # ...
+  end
+
+= selfの[]の呼び方
+
+  * 自分も昔悩んだ気がする
+  * 懐かしかったので紹介
+
+= Join Red Data Tools!
+
+  * Webサイト
+    * (('tag:x-small'))((<URL:https://red-data-tools.github.io/ja/>))
+  * チャット
+    * (('tag:x-small'))((<URL:https://gitter.im/red-data-tools/ja>))
+  * GitHub
+    * (('tag:x-small'))((<URL:https://github.com/red-data-tools/>))
+
