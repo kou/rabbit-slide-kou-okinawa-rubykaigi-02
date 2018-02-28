@@ -252,18 +252,6 @@ csv
   # rouge ruby
 
   def dig(index, *indexes)
-    # selfは省略できないか。。。
-    # メソッド呼び出し形式なら？
-    value = self.[index]
-    # ↑はシンタックスエラー
-    # ...
-  end
-
-= []の呼び方
-
-  # rouge ruby
-
-  def dig(index, *indexes)
     # こういうときこそsendで　　
     # メソッド呼び出し
     value = send(:[], index)
@@ -287,6 +275,7 @@ csv
 
   * 自分も昔悩んだ気がする
   * 懐かしかったので紹介
+  * みんなで開発→気づきやすい
 
 = Join Red Data Tools!
 
