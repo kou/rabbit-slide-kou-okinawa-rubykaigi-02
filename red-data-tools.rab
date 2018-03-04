@@ -56,10 +56,13 @@ Rubyで\n
 (('tag:center'))
 (('tag:large'))
 Rubyコミュニティーを\n
-超えて協力する
-
-(('tag:center'))
+超えて協力する\n
 (('note:もちろんRubyコミュニティーとも協力する'))
+
+== スライドプロパティー
+
+: as-large-as-possible
+   false
 
 = Rubyに閉じずに協力
 
@@ -82,7 +85,10 @@ Rubyコミュニティーを\n
 非難することよりも\n
 手を動かすことが大事
 
-(('tag:center'))
+== スライドプロパティー
+
+: as-large-as-possible
+   false
 
 = 非難しない
 
@@ -106,7 +112,10 @@ Rubyコミュニティーを\n
 継続的に活動することが\n
 大事
 
-(('tag:center'))
+== スライドプロパティー
+
+: as-large-as-possible
+   false
 
 = 一回だけの活発な活動
 
@@ -135,7 +144,10 @@ Rubyコミュニティーを\n
 現時点での知識不足は\n
 問題ではない
 
-(('tag:center'))
+== スライドプロパティー
+
+: as-large-as-possible
+   false
 
 = 知識不足？
 
@@ -163,7 +175,10 @@ Rubyコミュニティーを\n
 部外者からの非難は\n
 気にしない
 
-(('tag:center'))
+== スライドプロパティー
+
+: as-large-as-possible
+   false
 
 = 部外者からの非難
 
@@ -277,12 +292,131 @@ csv
   * 懐かしかったので紹介
   * みんなで開発→気づきやすい
 
+= 開発例2
+
+Red Datasets
+
+= Red Datasets
+
+  * データを簡単に使えるように！
+  * 勉強・実験時とかに便利
+
+= 例：日本語データ欲しい！
+
+  # rouge ruby
+  require "datasets"
+  # 日本語版Wikipediaの記事データ
+  options = {language: :ja, type: :articles}
+  dataset = Datasets::Wikipedia.new(options)
+  dataset.each do |page| # 前ページを順に処理
+    p page.title         # タイトル
+    p page.revision.text # 本文
+  end
+
+= 実装方法
+
+  (1) データのダウンロード
+  (2) データのパース
+  (3) 順に(({yield}))
+
+= ダウンロード
+
+  # rouge ruby
+  require "open-uri"
+  open("https://...") do |input|
+    File.open("...", "wb") do |output|
+      IO.copy_stream(input, output)
+    end
+  end
+
+= 途中でエラーになったら？
+
+(('tag:center'))
+(('tag:x-large'))
+やり直し
+
+(('tag:center'))
+または
+
+(('tag:center'))
+(('tag:x-large'))
+再開
+
+= 再開
+
+HTTP\n
+range request
+
+= HTTP range request
+
+  * リクエスト
+    * (({Range: bytes=#{start}-}))
+  * レスポンス
+    * (({206 Partial Content}))
+    * (({Content-Range: bytes ...}))
+
+= open-uriとrange request
+
+  * open-uriはrange request未対応
+    * 出力無関係のAPIだからしょうがない
+  * どうなるのがいいだろう？
+    * 今度田中さんに相談しよう
+    * Red Data ToolsはRubyもよくしたい\n
+      (('note:ポリシー1：コミュニティーを超えて協力'))
+
+= open-uriでrange request
+
+  # rouge ruby
+  # 文字列キーはHTTPヘッダーになる
+  options = {"Range" => "bytes=#{start}-"}
+  open("...", options) do |input|
+    # レスポンスが200か206かはわからない
+    File.open("...", "ab") do |output|
+      IO.copy_stream(input, output)
+    end
+  end
+
+= 大きなデータの扱い
+
+  * 時間がかかる
+  * あとどのくらいか気になる
+    * ちゃんと動いているよね…？
+
+= プログレスバー
+
+TODO
+
+= 開発したくなった？
+
+  * 楽しそう！
+    * 一緒に開発しようぜ！
+  * やっぱRubyでデータ扱いたい！
+    * 一緒に開発しようぜ！
+  * レベルアップしたい！
+    * 一緒に開発しようぜ！
+
+= レベルアップへの道
+
+  * 🙅NG集をたくさん覚える
+  * 🙆よいコードにたくさん触れる
+
+= よいコード
+
+Red Data Toolsに\n
+たくさんある！
+
+= 一緒に開発
+
+  * 🌏どこからでもオンラインで
+    * GitHubとGitter（チャット）を使用
+  * ➕東京は月一オフラインで
+    * 🔍「OSS Gate Red Data Tools」
+
 = Join Red Data Tools!
 
   * Webサイト
     * (('tag:x-small'))((<URL:https://red-data-tools.github.io/ja/>))
-  * チャット
+  * Gitter（チャット）
     * (('tag:x-small'))((<URL:https://gitter.im/red-data-tools/ja>))
   * GitHub
     * (('tag:x-small'))((<URL:https://github.com/red-data-tools/>))
-
