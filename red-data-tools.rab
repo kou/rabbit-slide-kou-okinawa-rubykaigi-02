@@ -209,7 +209,7 @@ Rubyだから！
 
   * ツールの紹介((*ではない*))
   * 実装の紹介
-    * 開発中におっと思ったやつとか
+    * 開発中に((*おっ*))と思ったやつとか
     * 紹介したいやつとか
 
 = 開発例1
@@ -308,10 +308,13 @@ Red Datasets
   # 日本語版Wikipediaの記事データ
   options = {language: :ja, type: :articles}
   dataset = Datasets::Wikipedia.new(options)
-  dataset.each do |page| # 前ページを順に処理
+  dataset.each do |page| # 全ページを順に処理
     p page.title         # タイトル
     p page.revision.text # 本文
   end
+
+(('tag:center'))
+(('note:インターフェイスがeachなのがカッコいいんだよ！'))
 
 = 実装方法
 
@@ -384,7 +387,220 @@ range request
 
 = プログレスバー
 
-TODO
+  * ユーザーを安心させるUI
+  * 可視化
+    * 動いている？
+    * どのくらいで終わりそう？
+
+= プログレスバーの実装
+
+  # rouge ruby
+
+  n = 40
+  1.upto(n) do |i|
+    print("\r|%-*s|" % [n, "*" * i])
+    sleep 0.1
+  end
+  puts
+
+= sprintfフォーマット
+
+(('tag:center'))
+(({%-*s}))
+
+  * (({%}))：フォーマット開始
+  * (({-}))：左詰め
+  * (({*}))：引数で幅を指定
+  * (({s}))：対象は文字列
+
+= sprintfフォーマット
+
+(('tag:center'))
+(({"%-*s" % [n - 1, "*" * i]}))
+
+  * 幅は(({n - 1}))桁
+  * (({"*" * i}))を左詰め
+
+= open-uriでプログレスバー
+
+  # rouge ruby
+
+  length = nil
+  progress = lambda do |current|
+    ratio = current / length.to_f
+    print("\r|%-10s|" % ["*" * (ratio * 10).ceil])
+  end
+  open(uri,
+       content_length_proc: ->(l) {length = l},
+       progress_proc: progress) do |input|
+    # ...
+  end
+  puts
+
+= もっとプログレスバー
+
+  * バックグランド化したら？
+    * 表示して欲しくない\n
+      (('note:ヒント：プロセスグループ'))
+  * リダイレクトしているときは？
+    * 表示して欲しくない\n
+      (('note:ヒント：IO#tty?'))
+  * プログレスバーの表示幅は？\n
+    (('note:ヒント：io/console/size'))
+
+= 開発例3
+
+Apache Arrow\n
+Red Arrow
+
+= Apache Arrow
+
+  * インメモリーデータ分析用\n
+    データフォーマット\n
+    (('note:ほぼ固まってきた'))
+  * インメモリーデータ分析用\n
+    高速なデータ操作実装\n
+    (('note:徐々に実装が始まっている'))
+  * 今、すごくアツい！
+
+= Apache Arrowの特徴
+
+(('tag:center'))
+(('tag:large'))
+データ交換コストが低い
+
+== スライドプロパティー
+
+: as-large-as-possible
+   false
+
+= 低データ交換コスト
+
+  * 複数システムで協力しやすい
+    * Rubyでデータ取得→
+    * Pythonに渡して分析
+  * 徐々にRubyの適用可能範囲を\n
+    増やせる
+
+= Apache Arrowの利用例
+
+  * Scala🔁Python
+    * (('tag:x-small'))Apache Spark
+  * CPU🔁GPU
+    * (('tag:x-small'))((<URL:https://github.com/gpuopenanalytics/libgdf>))
+  * CPU🔁FPGA
+    * (('tag:x-small'))((<URL:https://github.com/johanpel/fletcher>))
+
+= Apache ArrowをRubyでも！
+
+  * バインディングを本体で開発
+    * 本体の開発チーム入り\n
+    * GObject Introspection(GI)を利用
+  * GIを使うとRuby以外のバインディングも自動生成できる\n
+    (('note:ポリシー1：コミュニティーを超えて協力'))
+
+= Red Arrow
+
+  * Apache Arrowの\n
+    Rubyバインディング
+  * GIベースのバインディングに\n
+    Ruby特有の機能をプラス
+
+= Ruby特有の機能1
+
+スライスAPI
+
+= スライス
+
+(('tag:center'))
+データの一部を切り出す
+
+  # rouge ruby
+
+  (0..10).to_a.slice(2)
+  # => 2
+  (0..10).to_a.slice(2..4)
+  # => [2, 3, 4]
+  (0..10).to_a.slice(2, 4)
+  # => [2, 3, 4, 5]
+
+= Red Arrowのスライス
+
+  # rouge ruby
+
+  table.slice(2)
+  # 2行目だけのテーブル
+  # Array#sliceと違う
+
+= Red Arrowのスライス
+
+  # rouge ruby
+
+  table.slice(2..4)
+  # 2,3,4行目だけのテーブル
+  # Array#sliceと同じ
+
+= Red Arrowのスライス
+
+  # rouge ruby
+
+  table.slice(2, 4)
+  # 2,4行目だけのテーブル
+  # Array#sliceと違う
+  table.slice(2, 4, 6, 8)
+  # 2,4,6,8行目だけのテーブル
+  # Array#sliceと違う
+
+= Red Arrowのスライス
+
+  # rouge ruby
+
+  table.slice([2, 4])
+  # 2,3,4,5行目だけのテーブル
+  # Array#slice(2, 4)と同じ
+
+= Red Arrowのスライス
+
+  # rouge ruby
+
+  table.slice([true, false] * 5)
+  # 奇数行だけのテーブル
+
+= Red Arrowのスライス
+
+  # rouge ruby
+
+  table.slice do |slicer|
+    slicer.price >= 500
+  end
+  # priceカラムの値が500以上の
+  # 行だけのテーブル
+
+= Red Arrowのスライス
+
+  # rouge ruby
+
+  table.slice do |slicer|
+    (slicer.price >= 500) &
+      (slicer.is_published)
+  end
+  # priceカラムの値が500以上かつ
+  # is_publishedカラムの値がtrueの
+  # 行だけのテーブル
+
+= Red Arrowのスライス
+
+Active Recordみたいなfluent intefaceよりもブロック内で式を書く方がRubyっぽいんじゃないかと思うんだよねー\n
+fluent interfaceはORを書きにくいからさー
+
+(('tag:xx-small'))
+Fluent interface:\n
+((<URL:http://bliki-ja.github.io/FluentInterface/>))
+
+= Red Arrowと外の世界
+
+  * いろんなデータ・ライブラリーのハブにしたい
+  * TODO
 
 = 開発したくなった？
 
