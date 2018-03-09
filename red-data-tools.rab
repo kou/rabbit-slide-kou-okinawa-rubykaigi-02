@@ -299,7 +299,7 @@ Red Datasets
 = Red Datasets
 
   * データを簡単に使えるように！
-  * 勉強・実験時とかに便利
+  * 実験・開発に便利
 
 = 例：日本語データ欲しい！
 
@@ -385,12 +385,9 @@ range request
   * あとどのくらいか気になる
     * ちゃんと動いているよね…？
 
-= プログレスバー
+= あとどのくらい？
 
-  * ユーザーを安心させるUI
-  * 可視化
-    * 動いている？
-    * どのくらいで終わりそう？
+プログレスバー
 
 = プログレスバーの実装
 
@@ -477,8 +474,8 @@ Red Arrow
 = 低データ交換コスト
 
   * 複数システムで協力しやすい
-    * Rubyでデータ取得→
-    * Pythonに渡して分析
+    * Rubyでデータ取得
+    * →Pythonに渡して分析
   * 徐々にRubyの適用可能範囲を\n
     増やせる
 
@@ -564,7 +561,7 @@ Red Arrow
   # rouge ruby
 
   table.slice([true, false] * 5)
-  # 奇数行だけのテーブル
+  # 1,3,5,7,9行目だけのテーブル
 
 = Red Arrowのスライス
 
@@ -601,7 +598,7 @@ Fluent interface:\n
 
   * ハブになりたい
     * 各種データと変換可能に
-    * 各種オブジェクトと変換可能
+    * 各種オブジェクトと変換可能に
   * Ruby間の連携を推進
     * 今は互換性がないライブラリー\n
       →連携できるように！
@@ -609,8 +606,7 @@ Fluent interface:\n
 = データ変換
 
   * (({Arrow::Table.load}))
-    * データの読み込み\n
-      (({Marshal.#load}))みたいな
+    * データの読み込み
   * (({Arrow::Table#save}))
     * データの書き出し
 
@@ -627,7 +623,7 @@ Fluent interface:\n
 
 = CSVの読み込み
 
-  * 一番広く使われている
+  * CSVは広く使われている
   * データ定義が緩い
     * 例：カラムの型情報がない
 
@@ -651,11 +647,11 @@ Fluent interface:\n
     when "true", "false", true, false; candidate = :boolean
     when Integer; candidate = :integer
     # ...
-    else; candidate = :string
+    else; candidate = :string # わからなかったら文字列
     end
-    break if candidate == :string
+    break if candidate == :string # 文字列なら終わり
   end
-  candidate || :string
+  candidate || :string # わからなかったら文字列
 
 = オブジェクト変換
 
@@ -700,15 +696,172 @@ Fluent interface:\n
 
 = ゼロコピーの実現
 
-TODO
+  * ゼロコピー
+    * 同じメモリー領域を参照し、\n
+      コピーせずに同じデータを利用
+  * データ
+    * バイト列へのポインター
+    * Rubyでは(({RSTRING_PTR(string)}))
+
+= (({String}))とゼロコピー
+
+  # rouge c
+
+  /* pointerの内容をコピー */
+  rb_str_new(pointer, size);
+  /* pointerの内容を参照：ゼロコピー */
+  rb_str_new_static(pointer, size);
+
+= (({String}))とゼロコピーとGC
+
+  # rouge c
+
+  arrow_data = /* ... */;
+  /* ゼロコピー */
+  rb_str_new_static(arrow_data, size);
+  /* arrow_dataはいつ、だれが開放？ */
+
+= Rubyでゼロコピー
+
+  * (({rb_str_new_static()}))だけじゃ×
+    * メモリー管理できない
+  * メモリー管理する何かが必要
+
+= Red Arrowでゼロコピー
+
+  * GBytesを利用
+  * GBytes
+    * GLib提供のバイト列オブジェクト
+    * リファレンスカウントあり
+  * Rubyだと(({GLib::Bytes}))
+
+= (({GLib::Bytes#to_s}))
+
+  # rouge c
+
+  static VALUE
+  rgbytes_to_s(VALUE self)
+  {
+    GBytes *bytes = RVAL2BOXED(self, G_TYPE_BYTES);
+    gsize size;
+    gconstpointer data = g_bytes_get_data(bytes, &size);
+    /* ゼロコピーでASCII-8BITな文字列を生成 */
+    VALUE rb_data = rb_enc_str_new_static(
+      data, size, rb_ascii8bit_encoding());
+    /* 元のGLib::Bytesを参照してGCされるのを防ぐ */
+    rb_iv_set(rb_data, "@bytes", self);
+    return rb_data;
+  }
+
+= すでに使っていた
+
+  # rouge ruby
+
+  class GdkPixbuf::Pixbuf
+    def to_arrow
+      # ピクセル値はGLib::Bytes
+      bytes = read_pixel_bytes
+      buffer = Arrow::Buffer.new(bytes)
+      shape = [height, width, n_channels]
+      Arrow::Tensor.new(Arrow::UInt8DataType.new,
+                        buffer,
+                        shape)
+    end
+  end
 
 = Red Chainer
 
+(('tag:large'))
 ChainerのRuby移植
 
-= ...
+== スライドプロパティー
 
-TODO
+: as-large-as-possible
+   false
+
+= Chainer
+
+  * 深層学習フレームワーク
+    * Pythonのみで実装
+  * 移植しやすい
+    * Pythonのみで実装されているから
+
+= Red Chainerサンプル
+
+  # rouge ruby
+
+  model = Chainer::Links::Model::Classifier.new(MLP.new(args[:unit], 10))
+  optimizer = Chainer::Optimizers::Adam.new
+  optimizer.setup(model)
+  train, test = Chainer::Datasets::Mnist.get_mnist
+
+  train_iter = Chainer::Iterators::SerialIterator.new(train, args[:batchsize])
+  test_iter = Chainer::Iterators::SerialIterator.new(test, args[:batchsize], repeat: false, shuffle: false)
+
+  # ...
+
+(('tag:center'))
+横に長い
+
+= Chainerのサンプル
+
+  # rouge python
+
+  import chainer
+  import chainer.links as L
+
+  model = L.Classifier(MLP(args.unit, 10))
+  optimizer = chainer.optimizers.Adam()
+  optimizer.setup(model)
+  train, test = chainer.datasets.get_mnist()
+  train_iter = chainer.iterators.SerialIterator(train, args.batchsize)
+  test_iter = chainer.iterators.SerialIterator(test, args.batchsize,
+                                               repeat=False, shuffle=False)
+
+(('tag:center'))
+こっちも横に長い
+
+= Pythonでの短く仕方
+
+  # rouge python
+
+  # 通常
+  import chainer
+  model = chainer.links.Classifier(MLP(args.unit, 10))
+
+  # Lでショートカット
+  import chainer.links as L
+  model = L.Classifier(MLP(args.unit, 10))
+
+= Rubyでの短く仕方
+
+  # rouge ruby
+
+  # 通常
+  model = Chainer::Links::Model::Classifier.new(...)
+
+  # Lでショートカット
+  L = Chainer::Links
+  model = L::Model::Classifier.new(...)
+
+= PythonとRubyの違い
+
+  * Python
+    * ファイル内でだけ(({L}))が有効
+    * ファイル単位でネームスペース
+  * Ruby
+    * グローバルに(({L}))が有効
+    * 微妙！
+
+= Rubyらしく短く
+
+  # rouge ruby
+
+  # Rubyのネームスペースの仕組みはモジュール
+  Module.new do
+    L = Chainer::Links
+    model = L::Model::Classifier.new(...)
+  end
 
 = 開発したくなった？
 
