@@ -474,18 +474,17 @@ Red Arrow
 = 低データ交換コスト
 
   * 複数システムで協力しやすい
-    * Rubyでデータ取得
-    * →Pythonに渡して分析
+    * Rubyでデータ取得🠊Pythonで分析
   * 徐々にRubyの適用可能範囲を\n
     増やせる
 
 = Apache Arrowの利用例
 
-  * Scala🔁Python
+  * Scala🤝Python
     * (('tag:x-small'))Apache Spark
-  * CPU🔁GPU
+  * CPU🤝GPU
     * (('tag:x-small'))((<URL:https://github.com/gpuopenanalytics/libgdf>))
-  * CPU🔁FPGA
+  * CPU🤝FPGA
     * (('tag:x-small'))((<URL:https://github.com/johanpel/fletcher>))
 
 = Apache ArrowをRubyでも！
@@ -593,6 +592,87 @@ fluent interfaceはORを書きにくいからさー
 (('tag:xx-small'))
 Fluent interface:\n
 ((<URL:http://bliki-ja.github.io/FluentInterface/>))
+
+= ブロック内で条件式
+
+  # rouge ruby
+
+  class Arrow::Table
+    # table.slice {|slicer| ...}の実現
+    def slice(*slicers)
+      if block_given?
+        slicer = yield(Slicer.new(self))
+        slicers << slicer.evaluate
+      end
+      # ...
+    end
+  end
+
+= ブロック内で条件式
+
+  # rouge ruby
+
+  class Arrow::Slicer
+    def initialize(table)
+      @table = table
+    end
+
+    # slicer.priceの実現
+    def method_missing(name, *args, &block)
+      ColumnCondition.new(@table[name])
+    end
+  end
+
+= ブロック内で条件式
+
+  # rouge ruby
+
+  class ColumnCondition < Condition
+    def initialize(column)
+      @column = column
+    end
+
+    # slicer.price >= 500の実現
+    def >=(value)
+      GreaterEqualCondition.new(@column, value)
+    end
+  end
+
+= ブロック内で条件式
+
+  # rouge ruby
+
+  class GreaterEqualCondition < Condition
+    def initialize(column, value)
+      @column = column
+      @value = value
+    end
+
+    # slicer.price >= 500を評価
+    def evaluate
+      # ホントはC++で実装
+      @column.collect {|value| value >= @value}
+    end
+  end
+
+= ブロック内で条件式
+
+  # rouge ruby
+
+  class Condition
+    # (slicer.price >= 500) & (...)の実現
+    def &(condition)
+      AndCondition.new(self, condition)
+    end
+  end
+
+= 条件式のポイント
+
+  * 遅延評価
+    * ❌各要素毎にブロックを評価
+    * ブロックは一回だけ評価
+    * ブロックで指定した条件は\n
+      コンパイルしてC++実装で実行
 
 = Red Arrowと外の世界
 
@@ -723,7 +803,7 @@ Fluent interface:\n
 
 = Rubyでゼロコピー
 
-  * (({rb_str_new_static()}))だけじゃ❌
+  * ❌(({rb_str_new_static()}))だけ
     * メモリー管理できない
   * メモリー管理する何かが必要
 
@@ -751,7 +831,25 @@ Fluent interface:\n
     return rb_data;
   }
 
-= すでに使っていた
+= (({GLib::Bytes#initialize}))
+
+  # rouge c
+
+  static VALUE rgbytes_initialize(VALUE self, VALUE rb_data) {
+    GBytes *bytes;
+    if (RB_OBJ_FROZEN(rb_data)) {
+      /* freezeされていればゼロコピー */
+      bytes = g_bytes_new_static(RSTRING_PTR(rb_data),
+                                 RSTRING_LEN(rb_data));
+    } else { /* コピー */
+      bytes = g_bytes_new(RSTRING_PTR(rb_data),
+                          RSTRING_LEN(rb_data));
+    }
+    G_INITIALIZE(self, bytes);
+    return Qnil;
+  }
+
+= GBytesはすでに使っていた
 
   # rouge ruby
 
@@ -877,8 +975,14 @@ ChainerのRuby移植
 
 = よいコード
 
+(('tag:large'))
 Red Data Toolsに\n
 たくさんある！
+
+== スライドプロパティー
+
+: as-large-as-possible
+   false
 
 = 一緒に開発
 
