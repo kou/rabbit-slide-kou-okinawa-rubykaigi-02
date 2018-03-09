@@ -8,7 +8,7 @@ n = 40
   if process_group_id == terminal_process_group_id
     print("\r|%-*s|" % [n, "*" * i])
   end
-  sleep 0.1
+  sleep(0.1)
 end
 puts
 puts("Done")

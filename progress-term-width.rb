@@ -10,6 +10,6 @@ n = 40
     ratio = (progress_width * (i / n.to_f)).ceil
     print("\r|%-*s|" % [progress_width, "*" * ratio])
   end
-  sleep 0.1
+  sleep(0.1)
 end
 puts

@@ -222,14 +222,14 @@ csv
   * 2003年から標準添付
   * 2018年からメンテナンスを引取
 
-= digを追加したとき
+= (({dig}))を追加したとき
 
 (('tag:x-small'))((<URL:https://github.com/ruby/csv/pull/15>))
 
   * (({CSV::Table#dig}))
   * (({CSV::Row#dig}))
 
-= digの作り方
+= (({dig}))の作り方
 
   # rouge ruby
 
@@ -242,7 +242,7 @@ csv
     value.dig(*indexes)
   end
 
-= CSV::Rowでのfind_value
+= (({CSV::Row}))での(({find_value}))
 
   # rouge ruby
 
@@ -250,7 +250,7 @@ csv
 
 (({dig}))の中では(({self}))の(({[]}))を呼べばよい
 
-= []の呼び方
+= (({[]}))の呼び方
 
   # rouge ruby
 
@@ -262,7 +262,7 @@ csv
     # ...
   end
 
-= []の呼び方
+= (({[]}))の呼び方
 
   # rouge ruby
 
@@ -274,7 +274,7 @@ csv
     # ...
   end
 
-= []の呼び方
+= (({[]}))の呼び方
 
   # rouge ruby
 
@@ -286,11 +286,11 @@ csv
     # ...
   end
 
-= selfの[]の呼び方
+= (({self}))の(({[]}))の呼び方
 
   * 自分も昔悩んだ気がする
   * 懐かしかったので紹介
-  * みんなで開発→気づきやすい
+  * みんなで開発🠊気づきやすい
 
 = 開発例2
 
@@ -396,7 +396,7 @@ range request
   n = 40
   1.upto(n) do |i|
     print("\r|%-*s|" % [n, "*" * i])
-    sleep 0.1
+    sleep(0.1)
   end
   puts
 
@@ -413,9 +413,9 @@ range request
 = sprintfフォーマット
 
 (('tag:center'))
-(({"%-*s" % [n - 1, "*" * i]}))
+(({"%-*s" % [n, "*" * i]}))
 
-  * 幅は(({n - 1}))桁
+  * 幅は(({n}))桁
   * (({"*" * i}))を左詰め
 
 = open-uriでプログレスバー
@@ -475,7 +475,7 @@ Red Arrow
 
   * 複数システムで協力しやすい
     * Rubyでデータ取得🠊Pythonで分析
-  * 徐々にRubyの適用可能範囲を\n
+  * 徐々にRubyを使えるところを\n
     増やせる
 
 = Apache Arrowの利用例
@@ -490,7 +490,7 @@ Red Arrow
 = Apache ArrowをRubyでも！
 
   * バインディングを本体で開発
-    * 本体の開発チーム入り\n
+    * 本体の開発チームに入った\n
     * GObject Introspection(GI)を利用
   * GIを使うとRuby以外のバインディングも自動生成できる\n
     (('note:ポリシー1：コミュニティーを超えて協力'))
@@ -502,7 +502,7 @@ Red Arrow
   * GIベースのバインディングに\n
     Ruby特有の機能をプラス
 
-= Ruby特有の機能1
+= Ruby特有の機能例
 
 スライスAPI
 
@@ -560,7 +560,7 @@ Red Arrow
   # rouge ruby
 
   table.slice([true, false] * 5)
-  # 1,3,5,7,9行目だけのテーブル
+  # 0,2,4,6,8行目だけのテーブル
 
 = Red Arrowのスライス
 
@@ -681,7 +681,7 @@ Fluent interface:\n
     * 各種オブジェクトと変換可能に
   * Ruby間の連携を推進
     * 今は互換性がないライブラリー\n
-      →連携できるように！
+      🠊連携できるように！
 
 = データ変換
 
@@ -704,15 +704,17 @@ Fluent interface:\n
 = CSVの読み込み
 
   * CSVは広く使われている
-  * データ定義が緩い
-    * 例：カラムの型情報がない
+    * CSVなデータを簡単に使えると捗る
+  * 難しいところ
+    * データ定義が緩い\n
+      例：カラムの型情報がない
 
 = Red Arrowでの読み込み
 
   * 2パスで処理
     (1) 全部処理して各カラムの型を推定
     (2) 推定した型でArrowのデータに変換
-  * 時間がかかる
+  * 😅時間がかかる
     * 読み込んだデータを別の形式に変換して再利用する使い方を想定\n
       だから、まぁ、いいかなぁって
 
@@ -724,11 +726,13 @@ Fluent interface:\n
   column.each do |value|
     case value
     when nil; next # ignore
-    when "true", "false", true, false; candidate = :boolean
-    when Integer; candidate = :integer
+    when "true", "false", true, false; c = :boolean
+    when Integer; c = :integer
     # ...
-    else; candidate = :string # わからなかったら文字列
+    else; c = :string # わからなかったら文字列
     end
+    candidate ||= c
+    candidate = :string if candidate != c # 混ざったら文字列
     break if candidate == :string # 文字列なら終わり
   end
   candidate || :string # わからなかったら文字列
@@ -738,7 +742,7 @@ Fluent interface:\n
   * Numo::NArray, NMatrix
     * 既存の多次元配列オブジェクト
   * PyCall経由でPyArrow
-    * Rubyでデータ作成→Pythonで処理
+    * Rubyでデータ作成🠊Pythonで処理
   * GDK Pixbuf
     * 画像オブジェクト
 
@@ -779,6 +783,7 @@ Fluent interface:\n
   * ゼロコピー
     * 同じメモリー領域を参照し、\n
       コピーせずに同じデータを利用
+    * 速い！！！
   * データ
     * バイト列へのポインター
     * Rubyでは(({RSTRING_PTR(string)}))
@@ -822,12 +827,12 @@ Fluent interface:\n
   static VALUE rgbytes_to_s(VALUE self) {
     GBytes *bytes = RVAL2BOXED(self, G_TYPE_BYTES);
     gsize size;
-    gconstpointer data = g_bytes_get_data(bytes, &size);
+    gconstpointer data =
+      g_bytes_get_data(bytes, &size);
     /* ゼロコピーでASCII-8BITな文字列を生成 */
     VALUE rb_data = rb_enc_str_new_static(
       data, size, rb_ascii8bit_encoding());
-    /* 元のGLib::Bytesを参照してGCされるのを防ぐ */
-    rb_iv_set(rb_data, "@bytes", self);
+    rb_iv_set(rb_data, "@bytes", self); /* GC対策 */
     return rb_data;
   }
 
@@ -836,14 +841,14 @@ Fluent interface:\n
   # rouge c
 
   static VALUE rgbytes_initialize(VALUE self, VALUE rb_data) {
+    const char *pointer = RSTRING_PTR(rb_data);
+    long size = RSTRING_LEN(rb_data);
     GBytes *bytes;
-    if (RB_OBJ_FROZEN(rb_data)) {
-      /* freezeされていればゼロコピー */
-      bytes = g_bytes_new_static(RSTRING_PTR(rb_data),
-                                 RSTRING_LEN(rb_data));
+    if (RB_OBJ_FROZEN(rb_data)) { /* ゼロコピー */
+      bytes = g_bytes_new_static(pointer, size);
+      rb_iv_set(self, "source", rb_data); /* GC対策 */
     } else { /* コピー */
-      bytes = g_bytes_new(RSTRING_PTR(rb_data),
-                          RSTRING_LEN(rb_data));
+      bytes = g_bytes_new(pointer, size);
     }
     G_INITIALIZE(self, bytes);
     return Qnil;
