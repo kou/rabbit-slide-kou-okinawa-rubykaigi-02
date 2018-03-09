@@ -599,8 +599,116 @@ Fluent interface:\n
 
 = Red Arrowと外の世界
 
-  * いろんなデータ・ライブラリーのハブにしたい
-  * TODO
+  * ハブになりたい
+    * 各種データと変換可能に
+    * 各種オブジェクトと変換可能
+  * Ruby間の連携を推進
+    * 今は互換性がないライブラリー\n
+      →連携できるように！
+
+= データ変換
+
+  * (({Arrow::Table.load}))
+    * データの読み込み\n
+      (({Marshal.#load}))みたいな
+  * (({Arrow::Table#save}))
+    * データの書き出し
+
+= データ変換例
+
+  # rouge ruby
+
+  # CSVを読み込んで
+  table = Arrow::Table.load("a.csv")
+  # Arrowで保存
+  table.save("a.arrow")
+  # Parquetで保存
+  table.save("a.parquet")
+
+= CSVの読み込み
+
+  * 一番広く使われている
+  * データ定義が緩い
+    * 例：カラムの型情報がない
+
+= Red Arrowでの読み込み
+
+  * 2パスで処理
+    (1) 全部処理して各カラムの型を推定
+    (2) 推定した型でArrowのデータに変換
+  * 時間がかかる
+    * 読み込んだデータを別の形式に変換して再利用する使い方を想定\n
+      だから、まぁ、いいかなぁって
+
+= 型の推定
+
+  # rouge ruby
+
+  candidate = nil
+  column.each do |value|
+    case value
+    when nil; next # ignore
+    when "true", "false", true, false; candidate = :boolean
+    when Integer; candidate = :integer
+    # ...
+    else; candidate = :string
+    end
+    break if candidate == :string
+  end
+  candidate || :string
+
+= オブジェクト変換
+
+  * Numo::NArray, NMatrix
+    * 既存の多次元配列オブジェクト
+  * PyCall経由でPyArrow
+    * Rubyでデータ作成→Pythonで処理
+  * GDK Pixbuf
+    * 画像オブジェクト
+
+= オブジェクト変換例
+
+  # rouge ruby
+
+  # PNG画像を読み込み
+  pixbuf = GdkPixbuf::Pixbuf.new(file: "a.png")
+  # Arrow経由でNumo::NArrayに変換
+  narray = pixbuf.to_arrow.to_narray
+  # 不透明に（アルファ値（透明度）を0xffに）
+  narray[true, true, 3] = 0xff
+  # Arrow経由でGdkPixbuf::Pixbufに変換
+  no_alpha_pixbuf = narray.to_arrow.to_pixbuf
+  # GIF画像として保存
+  no_alpha_pixbuf.save(filename: "a-no-alpha.gif")
+
+= Pixbuf→Arrow
+
+  # rouge ruby
+
+  class GdkPixbuf::Pixbuf
+    def to_arrow
+      bytes = read_pixel_bytes # ピクセル値
+      buffer = Arrow::Buffer.new(bytes)
+      # 高さ、幅、チャンネル数の3次元配列
+      # チャンネル数：RGBAだと4チャンネル
+      shape = [height, width, n_channels]
+      # バイト列なのでUInt8
+      Arrow::Tensor.new(Arrow::UInt8DataType.new,
+                        buffer, shape)
+    end
+  end
+
+= ゼロコピーの実現
+
+TODO
+
+= Red Chainer
+
+ChainerのRuby移植
+
+= ...
+
+TODO
 
 = 開発したくなった？
 
