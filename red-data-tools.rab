@@ -596,7 +596,7 @@ Fluent interface:\n
 
 = Red Arrowと外の世界
 
-  * ハブになりたい
+  * ハブになるといいかも！
     * 各種データと変換可能に
     * 各種オブジェクトと変換可能に
   * Ruby間の連携を推進
@@ -723,7 +723,7 @@ Fluent interface:\n
 
 = Rubyでゼロコピー
 
-  * (({rb_str_new_static()}))だけじゃ×
+  * (({rb_str_new_static()}))だけじゃ❌
     * メモリー管理できない
   * メモリー管理する何かが必要
 
@@ -739,9 +739,7 @@ Fluent interface:\n
 
   # rouge c
 
-  static VALUE
-  rgbytes_to_s(VALUE self)
-  {
+  static VALUE rgbytes_to_s(VALUE self) {
     GBytes *bytes = RVAL2BOXED(self, G_TYPE_BYTES);
     gsize size;
     gconstpointer data = g_bytes_get_data(bytes, &size);
@@ -874,8 +872,8 @@ ChainerのRuby移植
 
 = レベルアップへの道
 
-  * 🙅NG集をたくさん覚える
-  * 🙆よいコードにたくさん触れる
+  * 😅NG集をたくさん覚える
+  * 😀よいコードにたくさん触れる
 
 = よいコード
 
