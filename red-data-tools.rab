@@ -11,9 +11,9 @@
 : date
    2018-03-10
 : start-time
-   2018-03-10T13:00:00+09:00
+   2018-03-10T13:10:00+09:00
 : end-time
-   2018-03-10T13:50:00+09:00
+   2018-03-10T14:00:00+09:00
 : theme
    clear-code
 
@@ -74,7 +74,8 @@ Rubyコミュニティーを\n
 
 = 協力例\n(('note:Apache Arrow'))
 
-  * Pythonの人達他と一緒にC/C++のライブラリーを開発
+  * Pythonの人達他と一緒に\n
+    C/C++のライブラリーを開発
     * それぞれでバインディングを開発
     * それぞれで同じライブラリーを活用
 
@@ -248,6 +249,7 @@ csv
 
   row[index] # => field value
 
+(('tag:center'))
 (({dig}))の中では(({self}))の(({[]}))を呼べばよい
 
 = (({[]}))の呼び方
@@ -312,9 +314,7 @@ Red Datasets
     p page.title         # タイトル
     p page.revision.text # 本文
   end
-
-(('tag:center'))
-(('note:インターフェイスがeachなのがカッコいいんだよ！'))
+  # インターフェイスがeachなのがカッコいいんだよ！
 
 = 実装方法
 
@@ -492,7 +492,8 @@ Red Arrow
   * バインディングを本体で開発
     * 本体の開発チームに入った\n
     * GObject Introspection(GI)を利用
-  * GIを使うとRuby以外のバインディングも自動生成できる\n
+  * GIを使うとRuby以外のバインディングも\n
+    自動生成できる\n
     (('note:ポリシー1：コミュニティーを超えて協力'))
 
 = Red Arrow
@@ -746,7 +747,7 @@ Fluent interface:\n
   * GDK Pixbuf
     * 画像オブジェクト
 
-= オブジェクト変換例
+= オブジェクト変換例1
 
   # rouge ruby
 
@@ -870,6 +871,33 @@ Fluent interface:\n
     end
   end
 
+= オブジェクト変換例2
+
+  # rouge ruby
+
+  # RelationをArrow形式に
+  users = User
+    .where("age >= ?", 20)
+    .to_arrow
+
+= Relation→Arrow
+
+  # rouge ruby
+
+  module ArrowActiveRecord::Arrowable
+    def to_arrow(batch_size: 10000)
+      in_batches(of: batch_size).each do |relation|
+        column_values_set = relation.pluck(*column_names).transpose
+        data_types.each_with_index do |data_type, i|
+          column_values = column_values_set[i]
+          arrow_batches[i] << build_arrow_array(column_values, data_type)
+        end
+      end
+      # ...
+      Arrow::Table.new(...)
+    end
+  end
+
 = Red Chainer
 
 (('tag:large'))
@@ -960,8 +988,8 @@ ChainerのRuby移植
 
   # Rubyのネームスペースの仕組みはモジュール
   Module.new do
-    L = Chainer::Links
-    model = L::Model::Classifier.new(...)
+    include Chainer::Links
+    model = Model::Classifier.new(...)
   end
 
 = 開発したくなった？
